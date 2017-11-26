@@ -3,15 +3,14 @@
 	<head>
 		<title>Resume Builder</title>
 		<script src="cv/cv.js"></script>
-		<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/1.3.4/jspdf.debug.js"></script>
-		<!--<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/1.3.4/jspdf.plugin.from_html.js"></script>
-		<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/1.3.4/jspdf.plugin.split_text_to_size.js"></script>
-		<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/1.3.4/jspdf.plugin.standard_fonts_metrics.js"></script>-->
-		<script src="https://unpkg.com/mithril/mithril.js"></script>
-		<link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet" integrity="sha384-wvfXpqpZZVQGK6TAh5PVlGOfQNHSoD2xbE+QkPxCAFlNEevoEH3Sl0sibVcOQVnN" crossorigin="anonymous">
-		<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
-		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
-		<!-- Latest compiled and minified JavaScript -->
+		<meta charset="utf-8" />
+		<link rel="stylesheet" href="thirdParty/font-awesome-4.7.0/css/font-awesome.min.css" />		
+	  	<!-- Bootstrap -->
+	  	<link rel="stylesheet" href="thirdParty/bootstrap-3.3.7-dist/css/bootstrap.min.css">
+	  	<!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+	  	<script src="thirdParty/jquery/jquery-3.2.1.min.js"></script>
+	  	<!-- Include all compiled plugins (below), or include individual files as needed -->
+	  	<script src="thirdParty/bootstrap-3.3.7-dist/js/bootstrap.min.js"></script><!-- Latest compiled and minified JavaScript -->
 		<!--<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>-->
 		<link rel="stylesheet" href="css/paper.css"/>
 		<!-- Latest compiled and minified CSS -->
@@ -56,6 +55,18 @@
             }
 		</style>
 		<script>
+            ROOT_SEPERATOR = "-/";
+            function join(array) {
+                var return_value;
+                if (array.length == 0) {
+                    return "";
+                }
+                return_value = array[0];
+                for (var i=1;i<array.length;i++) {
+                    return_value += ROOT_SEPERATOR + array[i];
+                }
+                return return_value;
+            }
             function el(name, options) {
                 var el = document.createElement(name);
                 if (!options) {
@@ -75,7 +86,7 @@
                 });
                 return el;
             }
-            function renderFormElement(holder, key, value) {
+            function renderFormElement(root_path, holder, key, value) {
                     if ((value == null) || (typeof value == "undefined")) {
                         return;
                     }
@@ -84,29 +95,38 @@
                     if (typeof value == "object") {
                         var header = el("h3", {html:key});
                         col.appendChild(header);
+                        root_path = join([root_path, key]);
+                        row.appendChild(col);
+                        $(holder).append(row);
                         $.each(value, function(key, value) {
-                            renderFormElement(holder, key, value);
+                            renderFormElement(root_path, holder, key, value);
                         });
                     }
                     if (value.isArray) {
+                        var header = el("h3", {html:key});
+                        col.appendChild(header);
+                        root_path = join([root_path, key]);
                         $.each(value, function(key, value) {
-                            renderFormElement(holder, key, value);
+                            renderFormElement(root_path, holder, key, value);
                         });
+                        row.appendChild(col);
+                        $(holder).append(row);
                     }
                     if (typeof value == "string") {
                         var label = el("label", {for:key, html:key});
                         col.appendChild(label);
-                        var input = el("input", {type:"text", class:"form-control", name:key, value:value});
+                        var input = el("input", {type:"text", id:join([root_path, key]), class:"form-control", name:key, value:value});
                         col.appendChild(input);
+                        row.appendChild(col);
+                        $(holder).append(row);
                     }
-                    row.appendChild(col);
-                    $(holder).append(row);
             }
 			$(document).ready(function() {
                 var holder = $("#information")[0]; 
                 $(holder).empty();
+                root_path = "";
                 $.each(data, function(key, value) {
-                    renderFormElement(holder, key, value);
+                    renderFormElement(root_path, holder, key, value);
                 });
             })
 		</script>
