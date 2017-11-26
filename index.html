@@ -53,6 +53,17 @@
             label {
                 color:#152f52;
             }
+            #information {
+                padding-left:5px;
+                padding-right:5px;
+            }
+            .viewport {
+                height:100%;
+            }
+            .fill {
+                height:100%;
+                min-height:100%;
+            }
 		</style>
 		<script>
             ROOT_SEPERATOR = "-/";
@@ -91,11 +102,16 @@
                         return;
                     }
                     var row = el("section", {class:"row"});
-                    var col = el("col-md-12");
+                    var col = el("section", {class:"col-md-12"});
                     if (typeof value == "object") {
                         var header = el("h3", {html:key});
                         col.appendChild(header);
-                        root_path = join([root_path, key]);
+                        if (root_path == "") {
+                            root_path = key;
+                        }
+                        else {
+                            root_path = join([root_path, key]);
+                        }
                         row.appendChild(col);
                         $(holder).append(row);
                         $.each(value, function(key, value) {
@@ -121,33 +137,65 @@
                         $(holder).append(row);
                     }
             }
-			$(document).ready(function() {
+            function set_el_from_id_string(data, idArray, level, new_value) {
+                console.log(data);
+                $.each(data, function(key, value) {
+                    if ((level == idArray.length-1) && (key == idArray[level])) {
+                        data[key] = new_value;
+                        return false;
+                    }
+                    if (key == idArray[level]) {
+                        set_el_from_id_string(value, idArray, level+1, new_value);
+                        return false;
+                    }
+                });
+            }
+            function render_information() {
                 var holder = $("#information")[0]; 
                 $(holder).empty();
                 root_path = "";
                 $.each(data, function(key, value) {
                     renderFormElement(root_path, holder, key, value);
                 });
+                $("#information .form-control").on("change", function() {
+                    var idArray = $(this)[0].id.split("-/");
+                    $.each(idArray, function(key, value) {
+                        if (parseInt(value).toString() == value) {
+                            idArray[key] = parseInt(idArray[key]);
+                        }
+                    })
+                    set_el_from_id_string(data, idArray, 0, $(this).val());
+                    render_information();
+                });
+            }
+			$(document).ready(function() {
+                render_information();
             })
 		</script>
 	</head>
 	<body class="A4">
-		<section class="container">
+        <section class="container-fluid fill">
             <section class="row">
                 <section class="col-md-12 text-center">
-                    <h1>CV Builder</h1>
+                        <h1>CV Builder</h1>
                 </section>
-            </section>
-            <section id="information">
-
             </section>
             <section class="row">
-                <section class="col-md-12 text-center">
-                    <button class="btn btn-default btn-lg">
-                        Save
-                    </button>
+                <section class="col-md-4">
+                    <section id="information">
+                            
+                    </section>
+                </section>
+                <section class="col-md-8">
+                    <section id="viewport" class="viewport A4">
+                        <section id="page1" class="sheet padding-10mm">
+                            <article>
+                                
+                            </article>
+                        </section>
+                    </section>
                 </section>
             </section>
-		</section>
+        </section>
 	</body>
 </html>
