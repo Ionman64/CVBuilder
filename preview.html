@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>Resume Builder</title>
+		<script src="cv.js"></script>
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/1.3.4/jspdf.debug.js"></script>
+		<!--<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/1.3.4/jspdf.plugin.from_html.js"></script>
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/1.3.4/jspdf.plugin.split_text_to_size.js"></script>
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/1.3.4/jspdf.plugin.standard_fonts_metrics.js"></script>-->
+		<script src="https://unpkg.com/mithril/mithril.js"></script>
+		<link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet" integrity="sha384-wvfXpqpZZVQGK6TAh5PVlGOfQNHSoD2xbE+QkPxCAFlNEevoEH3Sl0sibVcOQVnN" crossorigin="anonymous">
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+			<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+		<!-- Latest compiled and minified JavaScript -->
+		<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+		<link rel="stylesheet" href="css/paper.css"/>
+		<!-- Latest compiled and minified CSS -->
+		<style>@page {size: A4}</style>
+		<style>
+			body {
+				overflow-y:hidden;	
+				overflow-x:hidden;		
+			}
+			.container-fluid {
+				padding-left:0;
+				padding-right:0;
+			}
+			.sheet {
+				margin-left:auto;
+				margin-right:auto;
+			}
+			.navigation {
+				display:fixed;
+				height:10mm;
+				width:100%;
+				background:#152f52;
+			}
+			.viewport {
+				overflow-y:scroll;
+			}
+			.navigation>ul {
+				list-style-type: none;
+				margin: 0;
+				overflow: hidden;
+				width:100%;
+				padding:3mm;
+			}
+			.navigation>ul>li {
+				float:left;
+				margin-right:10px;
+				cursor:pointer;
+				color:#fff;
+				font-size:4mm;
+			}
+		</style>
+		<script>
+			function replaceNewLine(input) {
+				//https://stackoverflow.com/questions/8627902/new-line-in-text-area#8627926
+				return input.replace(/\\n/g, String.fromCharCode(13, 10) )
+			}
+			function pdfTest() {
+				var doc = new jsPDF();          
+				var elementHandler = {
+				  '#navigation': function (element, renderer) {
+					return true;
+				  }
+				};
+				var source = window.document.getElementById("viewport");
+				doc.fromHTML(
+					source,
+					15,
+					15,
+					{
+					  'width': 180,'elementHandlers': elementHandler
+					});
+				doc.save("test.pdf");
+			}
+			$(document).ready(function() {
+				//$("#sidebar").css("height", $( window ).height());
+				$("#viewport").css("height", $( window ).height());
+				//alert("Hello World");
+				var holder = document.getElementById("viewport");
+				var viewport = {
+					view: function() {
+						return m("main", [
+							m("section.sheet.padding-10mm", {"page-num":1}, [
+								m("article", [
+									m("h1", {class: "title", style:"text-align:center"}, "Peter Pickerill"),
+									m("table", {style:"width:100%"}, [
+										m("tr", [
+											m("td", {style:"text-align:left"}, [
+												m("p", "1 Silverdale Street Knutton ST5 6BY")
+											]),
+											m("td", {style:"text-align:center"}, "col2"),
+											m("td", {style:"text-align:right"}, "col3"),
+										])
+									])
+								])
+							])
+						])
+					}
+				}
+				m.mount(holder, viewport);
+			});
+			function exportAsPdf() {
+				$.ajax({
+					url:"export_pdf.php",
+					method:"POST",
+					dataType:"JSON",
+					data: {html:$("[page-num=1]").html()},
+					success:function(data) {
+						if (!data.success) {
+							return;
+						}
+						download("pdf/" + data.guid + ".pdf");
+					}
+				});
+			}
+			function download(file_path) {
+				alert("downloading: " + file_path);
+				var a = document.createElement('A');
+				a.href = file_path;
+				a.download = file_path.substr(file_path.lastIndexOf('/') + 1);
+				document.body.appendChild(a);
+				a.click();
+				//document.body.removeChild(a);
+			}
+		</script>
+	</head>
+	<body class="A4">
+		<section class="container-fluid">
+			<section class="row">
+				
+				<section class="col-md-9">
+					<section id="navigation" class="navigation">
+						<ul>
+							<li>Export as Word</li>
+							<li onclick="exportAsPdf()">Export as PDF</li>
+						</ul>
+					</section>
+				</section>
+				<section class="col-md-12" style="padding-bottom:10mm">
+					<section id="viewport" class="viewport">
+						<section id="page1" class="sheet padding-10mm">
+							<article>
+								
+							</article>
+						</section>
+						<section class="sheet padding-10mm">
+							<article>
+			
+							</article>
+						</section>
+					</section>
+				</section>
+			</section>
+		</section>
+	</body>
+</html>
